@@ -1,0 +1,23 @@
+{
+  "pipeline": [
+    "rsfmri_dicom2nifti",
+    "longTR_QualityControl",
+    "rsfmri_slice_timing"
+  ],
+  "parameters": {
+    "rsfmri_dicom2nifti": {
+      "working_path": "C:\\Users\\zhuyt12023\\Desktop\\layerfmri_mouse_immediate\\b2n_test\\auditory\\test",
+      "working_subject": "sub_001",
+      "scan_set": "13"
+    },
+    "longTR_QualityControl": {
+      "path": "C:\\Users\\zhuyt12023\\Desktop\\layerfmri_mouse_immediate\\b2n_test\\auditory\\test",
+      "rotation": "90"
+    },
+    "rsfmri_slice_timing": {
+      "slice_order": "[1:11 2:12]",
+      "timing": "2",
+      "prefix": "r"
+    }
+  }
+}

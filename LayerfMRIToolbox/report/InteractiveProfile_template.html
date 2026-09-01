@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+
+    <h1>{{ title }}</h1>
+    <div>
+        <h2>basic information</h2>
+        <p>Subject ID: {{ subject_name }}</p>
+        <p>Time: {{ current_time }}</p>
+        <p>Image_info: {{ Image_info }}</p>
+    </div>
+    <div>
+        <h2>1.Layering</h2>
+    {% for image in Limages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+            <p>{{image.annotation}} </p>
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>2.Individual</h2>
+        {% for image in Iimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>3.Mean</h2>
+        {% for image in Mimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+</body>
+</html>

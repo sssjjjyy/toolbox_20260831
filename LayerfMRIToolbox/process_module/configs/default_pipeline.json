@@ -1,0 +1,40 @@
+{
+    "pipeline": [
+        "rsfmri_dicom2nifti",
+        "rsfmri_bruker2bids",
+        "longTR_QualityControl",
+        "rsfmri_brainmask_ben_finetune",
+        "rsfmri_brainmask_ben_T2",
+        "rsfmri_brainmask_ben_EPI",
+        "rsfmri_slice_timing",
+        "rsfmri_motion_correction",
+        "rsfmri_regression",
+        "rsfmri_bandpassfilt",
+        "rsfmri_smooth_2D",
+        "tfmri_1st_level_analysis",
+        "tfmri_cotical_depth"
+    ],
+    "parameters": {
+        "Dicom2Nifti": {
+            "enabled": true
+        },
+        "Bruker2BIDS": {
+            "enabled": true,
+            "output_dir": "",
+            "task_names": [],
+            "type_set": []
+        },
+        "longTR_QualityControl": {
+            "enabled": true
+        },
+        "rsfmri_brainmask_ben_finetune": {
+            "enabled": true,
+            "env_name": "",
+            "train_path": "",
+            "label_path": "",
+            "target_path": "",
+            "weight_path": "",
+            "prefix": ""
+        }
+    }
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+
+    <h1>{{ title }}</h1>
+    <div>
+        <h2>basic information</h2>
+        <p>Subject ID: {{ subject_name }}</p>
+        <p>Time: {{ current_time }}</p>
+        <p>Image_info: {{ Image_info }}</p>
+    </div>
+    <div>
+        <h2>0.Quality Assessment</h2>
+    {% for image in QAimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+            <p>{{image.annotation}} </p>
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>1.Motion Correction</h2>
+        {% for image in MCimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>2.Cross Correlation</h2>
+        {% for image in CCimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>3.First level analysis (SPM)</h2>
+        {% for image in FLAimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+        <h2>4.Cross Correlation after motion scrubbing</h2>
+        {% for image in CCMSimages %}
+        <div style="padding: 30px 30px;width: 80%">
+            <p style="font-size: 20rpx;font-weight: bold">{{ image.caption }}</p>
+            <img src="{{ image.path }}" alt="{{ image.caption }}" style="width:100%">
+        </div>
+    {% endfor %}
+    </div>
+</body>
+</html>
