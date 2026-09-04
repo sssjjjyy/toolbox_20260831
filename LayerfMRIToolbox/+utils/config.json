@@ -1,4 +1,6 @@
 {
-    "chatgpt_api_key": ""
+    "chatgpt_api_key_env": "OPENAI_API_KEY",
+    "chatgpt_endpoint_env": "OPENAI_ENDPOINT",
+    "chatgpt_model_env": "OPENAI_MODEL",
+    "chatgpt_deployment_env": "OPENAI_DEPLOYMENT"
 }
-
