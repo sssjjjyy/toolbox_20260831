@@ -39,9 +39,9 @@ classdef Configuration < handle
             obj.Settings.TR_Seconds = 0.2;
             
             obj.Settings.ChatGPT_API_Key = getenv('OPENAI_API_KEY');
-            if isempty(obj.Settings.ChatGPT_API_Key)
-                obj.Settings.ChatGPT_API_Key = '';
-            end
+            obj.Settings.ChatGPT_Endpoint = getenv('OPENAI_ENDPOINT');
+            obj.Settings.ChatGPT_Model = getenv('OPENAI_MODEL');
+            obj.Settings.ChatGPT_Deployment = getenv('OPENAI_DEPLOYMENT');
             
             obj.Settings.DefaultImageSize = [800, 600];
             obj.Settings.DefaultFontSize = 12;

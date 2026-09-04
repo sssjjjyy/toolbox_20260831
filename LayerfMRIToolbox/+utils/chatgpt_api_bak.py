@@ -3,8 +3,8 @@ import sys
 import json
 import os
 
-openai.api_key = 'sk-VyM1T9gExamKIbWQ1bC3Cf4aA28040E181F9Ad94C86aC5D7'
-openai.base_url = "https://free.v36.cm/v1/"
+openai.api_key = os.environ.get("OPENAI_API_KEY", "")
+openai.base_url = os.environ.get("OPENAI_ENDPOINT", "https://genaiapi.shanghaitech.edu.cn/api/v1/start")
 
 class ChatHistory:
     def __init__(self):
@@ -26,8 +26,8 @@ def ask_chatgpt(prompt):
     """Send a query to ChatGPT and get a response using the new API."""
     try:
         # 获取 API 密钥
-        openai.api_key = 'sk-VyM1T9gExamKIbWQ1bC3Cf4aA28040E181F9Ad94C86aC5D7'
-        openai.base_url = "https://free.v36.cm/v1/"
+        openai.api_key = os.environ.get("OPENAI_API_KEY", "")
+        openai.base_url = os.environ.get("OPENAI_ENDPOINT", "https://genaiapi.shanghaitech.edu.cn/api/v1/start")
 
         # 添加用户消息到历史记录
         chat_history.add_message("user", prompt)
@@ -40,7 +40,7 @@ def ask_chatgpt(prompt):
 
         # 调用 ChatGPT 接口
         response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="GPT-5.6-SOL",
             messages=[
                 {"role": "user", "content": prompt}
             ],

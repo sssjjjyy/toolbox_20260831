@@ -1,8 +1,8 @@
 # pip install openai langchain faiss-cpu
 # pip install -U langchain-community
 # pip install requests beautifulsoup4
-# openai.api_key = 'sk-Y296nq3B9UsfGQlT74087eA7F4Cc4a25Bd432737Af448e23'
-# openai.base_url = "https://free.v36.cm/v1/"
+# openai.api_key = os.environ.get("OPENAI_API_KEY")
+# openai.base_url = "https://genaiapi.shanghaitech.edu.cn/api/v1/start"
 
 import openai
 import sys
@@ -419,7 +419,7 @@ Python文档:
 """
         try:
             response = openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model="GPT-5.6-SOL",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7
             )
@@ -482,7 +482,7 @@ Python文档:
             """
 
             response = openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model="GPT-5.6-SOL",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7
             )
@@ -504,8 +504,8 @@ Python文档:
 
 class FMRIAssistant:
     def __init__(self, toolbox_path: str):
-        self.openai_api_key = 'sk-Y296nq3B9UsfGQlT74087eA7F4Cc4a25Bd432737Af448e23'
-        self.base_url = "https://free.v36.cm/v1/"
+        self.openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+        self.base_url = os.environ.get("OPENAI_ENDPOINT", "https://genaiapi.shanghaitech.edu.cn/api/v1/start")
         self.knowledge_base = KnowledgeBase()
         self.error_analyzer = ErrorAnalyzer(toolbox_path)
         self.chat_history = []
@@ -572,7 +572,7 @@ class FMRIAssistant:
             """
 
             response = openai.chat.completions.create(
-                model="gpt-4o-mini",
+                model="GPT-5.6-SOL",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7
             )

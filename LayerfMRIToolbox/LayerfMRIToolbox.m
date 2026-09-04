@@ -143,7 +143,11 @@ classdef LayerfMRIToolbox < matlab.apps.AppBase
                 'FontColor', [0.2 0.9 0.2], ...
                 'FontName', 'Courier New', ...
                 'FontSize', 14);
-            app.ChatHistoryArea.Value = {'[System] AI Copilot Initialized.', '[System] 正在等待您的指令...'};
+            if isempty(app.ChatGPTHelper)
+                app.ChatHistoryArea.Value = {'[System] AI Copilot unavailable.', '[System] 请检查Python和AI环境配置。'};
+            else
+                app.ChatHistoryArea.Value = {'[System] AI Copilot initialized.', '[System] 正在等待您的指令...'};
+            end
             
             % 用户 Prompt 输入框
             app.PromptEditField = uitextarea(app.AIPanel, ...
@@ -153,7 +157,7 @@ classdef LayerfMRIToolbox < matlab.apps.AppBase
                 
             % 发送按钮
             app.SubmitPromptBtn = uibutton(app.AIPanel, 'push', ...
-                'Text', '发送 (Send)', ...
+                'Text', 'Send', ...
                 'Position', [650 50 100 80], ...
                 'FontSize', 16, 'FontWeight', 'bold', ...
                 'BackgroundColor', [0.1 0.6 0.3], 'FontColor', 'white', ...
@@ -190,35 +194,44 @@ classdef LayerfMRIToolbox < matlab.apps.AppBase
             end
         end
         
-        % 处理用户发送给 AI 的 Prompt
         function sendAIPrompt(app)
-            userText = app.PromptEditField.Value;
-            
-            % 检查是否为空
-            if isempty(userText) || all(cellfun(@isempty, userText))
+            inputValue = app.PromptEditField.Value;
+            if ischar(inputValue) || isstring(inputValue)
+                prompt = strtrim(strjoin(string(inputValue), newline));
+            elseif iscell(inputValue)
+                prompt = strtrim(strjoin(string(inputValue), newline));
+            else
+                prompt = "";
+            end
+
+            if strlength(prompt) == 0
                 return;
             end
-            
-            % 1. 将用户的输入格式化并打印到上方终端框中
+
             currentHistory = app.ChatHistoryArea.Value;
-            userMsg = ['> User: ' strjoin(userText, ' ')];
-            app.ChatHistoryArea.Value = [currentHistory; {''}; {userMsg}; {'[System] AI 正在思考中...'}];
-            scroll(app.ChatHistoryArea, 'bottom'); % 自动滚动到底部
-            
-            % 2. 清空输入框
+            userMessage = ['> User: ', char(replace(prompt, newline, ' '))];
+            app.ChatHistoryArea.Value = [currentHistory; {''}; {userMessage}; {'[System] AI 正在思考中...'}];
             app.PromptEditField.Value = '';
-            drawnow; % 强制立刻刷新 UI
-            
-            % =====================================================
-            % TODO: 在这里连接 OpenAI API 逻辑 (调用 app.ChatGPTHelper)
-            % =====================================================
-            
-            % 模拟网络延迟与假响应 (测试用)
-            pause(1.0); 
-            currentHistory = app.ChatHistoryArea.Value;
-            % 替换掉最后一行 "[System] AI 正在思考中..."
-            currentHistory(end) = {'[AI Copilot] 已收到您的文本请求！后端 OpenAI API 接口逻辑待接入。'};
-            app.ChatHistoryArea.Value = currentHistory;
+            app.SubmitPromptBtn.Enable = 'off';
+            scroll(app.ChatHistoryArea, 'bottom');
+            drawnow;
+
+            try
+                if isempty(app.ChatGPTHelper)
+                    error('LayerfMRIToolbox:AIUnavailable', 'AI接口未初始化，请检查Python与环境变量配置。');
+                end
+                response = app.ChatGPTHelper.askGPT(prompt);
+                responseLines = cellstr(splitlines(string(response)));
+                currentHistory = app.ChatHistoryArea.Value;
+                currentHistory(end) = [];
+                app.ChatHistoryArea.Value = [currentHistory; {'[AI Copilot]'}; responseLines];
+            catch ME
+                currentHistory = app.ChatHistoryArea.Value;
+                currentHistory(end) = [];
+                app.ChatHistoryArea.Value = [currentHistory; {['[Error] ', ME.message]}];
+            end
+
+            app.SubmitPromptBtn.Enable = 'on';
             scroll(app.ChatHistoryArea, 'bottom');
         end
         
