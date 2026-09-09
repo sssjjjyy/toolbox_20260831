@@ -1,0 +1,375 @@
+{
+  "schema_version": "1.0",
+  "generator": "LayerfMRIToolbox AI Copilot Skill Registry",
+  "toolbox_ai_version": "0.2.0",
+  "note": "status: enabled = verified + auto-executable, interactive = needs human step / not yet validated, unavailable = empty shell or missing dependency. execution_mode: auto = executor may run directly, in_memory = needs an in-memory array adapter (not directly executable from a file-based plan yet).",
+  "skills": [
+    {
+      "name": "rsfmri_smooth_2D",
+      "file": "rsfmri_smooth_2D.m",
+      "callable": "rsfmri_smooth_2D",
+      "display_name": "2D spatial smoothing (gaussian)",
+      "description": "Spatially smooths each axial slice of a 4D NIfTI run in-plane with imgaussfilt and writes prefix+filename.nii next to the input. Requires SPM for I/O.",
+      "status": "enabled",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["spm_vol", "spm_read_vols", "rp_Write4DNIfTI", "imgaussfilt"],
+      "parameters": [
+        {"name": "input_file_exclude", "label": "Input 4D NIfTI path", "type": "file", "required": true, "position": 1, "description": "Path to the 4D NIfTI file to smooth."},
+        {"name": "FWHM", "label": "FWHM (mm)", "type": "numeric", "required": true, "position": 2, "description": "Gaussian full width at half maximum in mm."},
+        {"name": "voxel_size", "label": "Voxel size (mm)", "type": "numeric", "required": true, "position": 3, "description": "Voxel size used to convert FWHM to sigma."},
+        {"name": "prefix", "label": "Output prefix", "type": "string", "required": true, "position": 4, "description": "Prefix prepended to the output file name."}
+      ]
+    },
+    {
+      "name": "rsfmri_bandpassfilt",
+      "file": "rsfmri_bandpassfilt.m",
+      "callable": "rsfmri_bandpassfilt",
+      "display_name": "Bandpass filter (in-memory volume)",
+      "description": "Bandpass filters voxel time series inside a brain mask with a Butterworth filter. Inputs are in-memory 4D arrays, so it cannot be started from a file-based plan alone.",
+      "status": "enabled",
+      "execution_mode": "in_memory",
+      "writes_files": false,
+      "dependencies": ["butter", "filtfilt"],
+      "parameters": [
+        {"name": "input_img_path", "label": "Input volume", "type": "volume", "required": true, "position": 1, "description": "In-memory 4D array to filter (requires an adapter step)."},
+        {"name": "TR", "label": "TR (s)", "type": "numeric", "required": true, "position": 2, "description": "Repetition time in seconds."},
+        {"name": "order", "label": "Filter order", "type": "integer", "required": true, "position": 3, "description": "Butterworth filter order."},
+        {"name": "low_cutoff", "label": "Low cutoff (Hz)", "type": "numeric", "required": true, "position": 4, "description": "Lower band edge in Hz."},
+        {"name": "high_cutoff", "label": "High cutoff (Hz)", "type": "numeric", "required": true, "position": 5, "description": "Upper band edge in Hz."},
+        {"name": "brainmask", "label": "Brain mask volume", "type": "volume", "required": true, "position": 6, "description": "In-memory mask volume (requires an adapter step)."}
+      ]
+    },
+    {
+      "name": "rsfmri_regression",
+      "file": "rsfmri_regression.m",
+      "callable": "rsfmri_regression",
+      "display_name": "Nuisance regression (in-memory volume)",
+      "description": "Regresses out regressors per voxel inside a brain mask. Inputs are in-memory 4D arrays / matrices, so it cannot be started from a file-based plan alone.",
+      "status": "enabled",
+      "execution_mode": "in_memory",
+      "writes_files": false,
+      "dependencies": ["regress"],
+      "parameters": [
+        {"name": "input_img_path", "label": "Input volume", "type": "volume", "required": true, "position": 1, "description": "In-memory 4D array to regress (requires an adapter step)."},
+        {"name": "regressors", "label": "Regressor matrix", "type": "volume", "required": true, "position": 2, "description": "In-memory regressor matrix (requires an adapter step)."},
+        {"name": "brainmask", "label": "Brain mask volume", "type": "volume", "required": true, "position": 3, "description": "In-memory mask volume (requires an adapter step)."}
+      ]
+    },
+    {
+      "name": "rsfmri_slice_timing",
+      "file": "rsfmri_slice_timing.m",
+      "callable": "rsfmri_slice_timing",
+      "display_name": "Slice timing correction",
+      "description": "Applies SPM slice timing correction to the given scan file(s). Needs validation on real data before it is opened for automatic execution.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["spm_slice_timing"],
+      "parameters": [
+        {"name": "data_path_exclude", "label": "Input file(s)", "type": "list", "required": true, "position": 1, "description": "Cell array (or single path) of NIfTI file(s) to correct."},
+        {"name": "slice_order", "label": "Slice order", "type": "list", "required": true, "position": 2, "description": "Acquisition order of slices."},
+        {"name": "timing", "label": "Timing scheme", "type": "string", "required": true, "position": 3, "description": "Reference slice timing scheme, e.g. seq or inter."},
+        {"name": "prefix", "label": "Output prefix", "type": "string", "required": true, "position": 4, "description": "Prefix for corrected output files."}
+      ]
+    },
+    {
+      "name": "rsfmri_dicom2nifti",
+      "file": "rsfmri_dicom2nifti.m",
+      "callable": "rsfmri_dicom2nifti",
+      "display_name": "DICOM to NIfTI (dcm2niix)",
+      "description": "Batch converts Bruker DICOM directories to NIfTI using the bundled dcm2niix.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["dcm2niix"],
+      "parameters": [
+        {"name": "working_path", "label": "Data root", "type": "dir", "required": true, "position": 1, "description": "Root directory containing subject scan folders."},
+        {"name": "working_subject", "label": "Subject folder", "type": "string", "required": true, "position": 2, "description": "Subject data folder name under working_path."},
+        {"name": "scan_set", "label": "Scan set", "type": "list", "required": true, "position": 3, "description": "List of scan directories to convert."}
+      ]
+    },
+    {
+      "name": "Dicom2Nifti",
+      "file": "Dicom2Nifti.m",
+      "callable": "Dicom2Nifti",
+      "display_name": "DICOM to NIfTI (batch wrapper)",
+      "description": "Higher level batch DICOM conversion for multiple subjects. Reads dataset.txt per subject.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["read_dataset", "rsfmri_dicom2nifti_batch"],
+      "parameters": [
+        {"name": "subjects", "label": "Subject folders", "type": "list", "required": true, "position": 1, "description": "Cell array of subject folder names."},
+        {"name": "working_dirs", "label": "Working directories", "type": "list", "required": true, "position": 2, "description": "Cell array of roots aligned with subjects."}
+      ]
+    },
+    {
+      "name": "rsfmri_bruker2bids",
+      "file": "rsfmri_bruker2bids.m",
+      "callable": "rsfmri_bruker2bids",
+      "display_name": "Bruker raw to BIDS",
+      "description": "Converts a Bruker subject dataset into a BIDS-like tree (T2, MB and EPI).",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["process_T2_data", "process_MB_data", "process_EPI_data"],
+      "parameters": [
+        {"name": "working_path", "label": "Data root", "type": "dir", "required": true, "position": 1, "description": "Root containing the subject folder."},
+        {"name": "output_path", "label": "Output root", "type": "dir", "required": true, "position": 2, "description": "Directory where the BIDS tree is written."},
+        {"name": "working_subject", "label": "Subject folder", "type": "string", "required": true, "position": 3, "description": "Raw subject folder name."},
+        {"name": "dataset_name", "label": "Dataset name", "type": "string", "required": true, "position": 4, "description": "Name of the BIDS dataset root."},
+        {"name": "sub_num", "label": "Subject number", "type": "string", "required": true, "position": 5, "description": "Numeric subject identifier for sub- directory."},
+        {"name": "task_name", "label": "Task names", "type": "list", "required": true, "position": 6, "description": "Cell array of task names."},
+        {"name": "type_set", "label": "Acquisition type set", "type": "list", "required": true, "position": 7, "description": "Cell array of acquisition parameter labels."},
+        {"name": "T2_folders", "label": "T2 scan folders", "type": "list", "required": true, "position": 8, "description": "Scan folder numbers for T2."},
+        {"name": "MB_folders", "label": "MB scan folders", "type": "list", "required": true, "position": 9, "description": "Scan folder numbers for multiband."},
+        {"name": "EPI_folders", "label": "EPI scan folders", "type": "list", "required": true, "position": 10, "description": "Scan folder numbers for EPI runs."}
+      ]
+    },
+    {
+      "name": "Bruker2BIDS",
+      "file": "Bruker2BIDS.m",
+      "callable": "Bruker2BIDS",
+      "display_name": "Bruker to BIDS (batch wrapper)",
+      "description": "Higher level batch Bruker-to-BIDS conversion for multiple subjects.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["read_dataset", "rsfmri_bruker2bids"],
+      "parameters": [
+        {"name": "subjects", "label": "Subject folders", "type": "list", "required": true, "position": 1, "description": "Cell array of subject folder names."},
+        {"name": "working_dirs", "label": "Working directories", "type": "list", "required": true, "position": 2, "description": "Cell array of roots aligned with subjects."},
+        {"name": "output_dir", "label": "Output directory", "type": "dir", "required": true, "position": 3, "description": "Directory for the BIDS output."},
+        {"name": "task_names", "label": "Task names", "type": "list", "required": true, "position": 4, "description": "Cell array of task names."},
+        {"name": "type_set", "label": "Acquisition type set", "type": "list", "required": true, "position": 5, "description": "Cell array of acquisition parameter labels."}
+      ]
+    },
+    {
+      "name": "longTR_QualityControl",
+      "file": "longTR_QualityControl.m",
+      "callable": "longTR_QualityControl",
+      "display_name": "Long-TR quality control report",
+      "description": "Runs LAYNII quality metrics and produces a figure mosaic report for one scan. Interactive in origin; requires LAYNII on path.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["LN_SKEW", "spm_read_vols"],
+      "parameters": [
+        {"name": "path", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input scan file."},
+        {"name": "rotation", "label": "Rotation for display", "type": "numeric", "required": true, "position": 2, "description": "Sagittal rotation (degrees) used when plotting slices."}
+      ]
+    },
+    {
+      "name": "deface",
+      "file": "deface.m",
+      "callable": "deface",
+      "display_name": "Deface (WSL + FSL)",
+      "description": "Defaces a NIfTI file through WSL FSL fslreorient2std + fsl_deface. Requires FSL in WSL.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["convert_to_wsl_path"],
+      "parameters": [
+        {"name": "input_path", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input image to deface."},
+        {"name": "output_path", "label": "Output NIfTI path", "type": "output", "required": true, "position": 2, "description": "Where the defaced image is written."}
+      ]
+    },
+    {
+      "name": "rsfmri_motion_correction",
+      "file": "rsfmri_motion_correction.m",
+      "callable": "rsfmri_motion_correction",
+      "display_name": "Motion correction (realign+reslice)",
+      "description": "Realigns and reslices a run. Registered but currently blocked: depends on longTR_Realignment / longTR_Reslice which are not present.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": true,
+      "dependencies": ["longTR_Realignment", "longTR_Reslice"],
+      "parameters": [
+        {"name": "input_name_exclude", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Run to realign."},
+        {"name": "voxel_size_f", "label": "Voxel size", "type": "numeric", "required": true, "position": 2, "description": "Voxel size in mm."},
+        {"name": "prefix", "label": "Output prefix", "type": "string", "required": true, "position": 3, "description": "Prefix for output files."}
+      ]
+    },
+    {
+      "name": "rsfmri_brainmask_ben_EPI",
+      "file": "rsfmri_brainmask_ben_EPI.m",
+      "callable": "rsfmri_brainmask_ben_EPI",
+      "display_name": "BEN brain mask (EPI)",
+      "description": "Runs BEN deep-learning brain masking inference on an EPI volume in a conda env.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["BEN_infer.py"],
+      "parameters": [
+        {"name": "input_path_exclude", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input EPI volume."},
+        {"name": "ben_output_path_exclude", "label": "Output path", "type": "output", "required": true, "position": 2, "description": "Where the mask is written."},
+        {"name": "weight_path", "label": "Weight path", "type": "file", "required": true, "position": 3, "description": "Path to BEN weights."},
+        {"name": "env_name", "label": "Conda env name", "type": "string", "required": true, "position": 4, "description": "Conda environment that has BEN installed."}
+      ]
+    },
+    {
+      "name": "rsfmri_brainmask_ben_T2",
+      "file": "rsfmri_brainmask_ben_T2.m",
+      "callable": "rsfmri_brainmask_ben_T2",
+      "display_name": "BEN brain mask (T2)",
+      "description": "Runs BEN deep-learning brain masking inference on a T2 volume in a conda env.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["BEN_infer.py"],
+      "parameters": [
+        {"name": "input_path_exclude", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input T2 volume."},
+        {"name": "ben_output_path_exclude", "label": "Output path", "type": "output", "required": true, "position": 2, "description": "Where the mask is written."},
+        {"name": "weight_path", "label": "Weight path", "type": "file", "required": true, "position": 3, "description": "Path to BEN weights."},
+        {"name": "env_name", "label": "Conda env name", "type": "string", "required": true, "position": 4, "description": "Conda environment that has BEN installed."}
+      ]
+    },
+    {
+      "name": "rsfmri_brainmask_ben_finetune",
+      "file": "rsfmri_brainmask_ben_finetune.m",
+      "callable": "rsfmri_brainmask_ben_finetune",
+      "display_name": "BEN brain mask fine-tune",
+      "description": "Fine-tunes a BEN model on labelled masks in a conda env.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["BEN_DA.py"],
+      "parameters": [
+        {"name": "env_name", "label": "Conda env name", "type": "string", "required": true, "position": 1, "description": "Conda environment that has BEN installed."},
+        {"name": "train_path", "label": "Training data", "type": "file", "required": true, "position": 2, "description": "Training data path."},
+        {"name": "label_path", "label": "Labels", "type": "file", "required": true, "position": 3, "description": "Label path."},
+        {"name": "target_path", "label": "Target data", "type": "file", "required": true, "position": 4, "description": "Target/adaptation data path."},
+        {"name": "weight_path", "label": "Weight path", "type": "file", "required": true, "position": 5, "description": "Initial weights path."},
+        {"name": "prefix", "label": "Output prefix", "type": "string", "required": true, "position": 6, "description": "Prefix for output weights."}
+      ]
+    },
+    {
+      "name": "tfmri_1st_level_analysis",
+      "file": "tfmri_1st_level_analysis.m",
+      "callable": "tfmri_1st_level_analysis",
+      "display_name": "Task fMRI first-level GLM",
+      "description": "Runs an SPM first-level analysis (specify, estimate, contrasts, results) and activation plots.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["spm_jobman", "spm_select", "spm_vol"],
+      "parameters": [
+        {"name": "input_name_exclude", "label": "Input run path", "type": "file", "required": true, "position": 1, "description": "4D NIfTI run to analyse."},
+        {"name": "volumes", "label": "Number of volumes", "type": "integer", "required": true, "position": 2, "description": "Number of scans."},
+        {"name": "stimulus_name", "label": "Stimulus name", "type": "string", "required": true, "position": 3, "description": "Condition name."},
+        {"name": "thresholds", "label": "Thresholds", "type": "list", "required": true, "position": 4, "description": "List of stat thresholds."},
+        {"name": "TR", "label": "TR (s)", "type": "numeric", "required": true, "position": 5, "description": "Repetition time."},
+        {"name": "onset_scan", "label": "Onsets", "type": "list", "required": true, "position": 6, "description": "Onset scans per trial."},
+        {"name": "duration_input", "label": "Duration", "type": "numeric", "required": true, "position": 7, "description": "Trial duration in scans."},
+        {"name": "extents", "label": "Extents", "type": "list", "required": true, "position": 8, "description": "Cluster extent thresholds."},
+        {"name": "threshdesc", "label": "Threshold descriptions", "type": "list", "required": true, "position": 9, "description": "Stat threshold type(s), e.g. FWE, none."},
+        {"name": "bg_name_exclude", "label": "Background image path", "type": "file", "required": true, "position": 10, "description": "Background (e.g. mean EPI) for activation plots."},
+        {"name": "motion_file_exclude", "label": "Motion regressors path", "type": "file", "required": true, "position": 11, "description": "Multi-reg motion parameter file."}
+      ]
+    },
+    {
+      "name": "multi_slice_animation",
+      "file": "multi_slice_animation.m",
+      "callable": "create_registration_animation",
+      "display_name": "Registration animation",
+      "description": "Creates an MP4/animation comparing structural and functional slices via registration_animation.py.",
+      "status": "interactive",
+      "execution_mode": "auto",
+      "writes_files": true,
+      "dependencies": ["registration_animation.py"],
+      "parameters": [
+        {"name": "t1_img", "label": "Structural image path", "type": "file", "required": true, "position": 1, "description": "T1/T2 structural image."},
+        {"name": "func_img", "label": "Functional image path", "type": "file", "required": true, "position": 2, "description": "Functional image."}
+      ]
+    },
+    {
+      "name": "tfmri_cotical_depth",
+      "file": "tfmri_cotical_depth.m",
+      "callable": "tfmri_cotical_depth",
+      "display_name": "Cortical depth layers",
+      "description": "Builds cortical depth layers with LAYNII. Registered but blocked: computeThickness / normDepth are missing.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": true,
+      "dependencies": ["computeThickness", "normDepth"],
+      "parameters": [
+        {"name": "rim_path_exclude", "label": "Rim path", "type": "file", "required": true, "position": 1, "description": "Rim/ribbon NIfTI."},
+        {"name": "voxel_size", "label": "Voxel size", "type": "numeric", "required": true, "position": 2, "description": "Voxel size in mm."},
+        {"name": "iter_times", "label": "Iterations", "type": "integer", "required": true, "position": 3, "description": "Number of iterations."},
+        {"name": "convergence_threshold", "label": "Convergence threshold", "type": "numeric", "required": true, "position": 4, "description": "Convergence criterion."},
+        {"name": "mean_epi_path_exclude", "label": "Mean EPI path", "type": "file", "required": true, "position": 5, "description": "Mean EPI used as target space."}
+      ]
+    },
+    {
+      "name": "rsfmri_bias_field_correction",
+      "file": "rsfmri_bias_field_correction.m",
+      "callable": "rsfmri_bias_field_correction",
+      "display_name": "Bias field correction",
+      "description": "Registered but empty shell. Not implemented yet.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": false,
+      "dependencies": [],
+      "parameters": [
+        {"name": "input_path", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input volume."},
+        {"name": "output_path", "label": "Output NIfTI path", "type": "output", "required": true, "position": 2, "description": "Output volume."}
+      ]
+    },
+    {
+      "name": "rsfmri_sdc",
+      "file": "rsfmri_sdc.m",
+      "callable": "rsfmri_sdc",
+      "display_name": "Susceptibility distortion correction",
+      "description": "Registered but empty shell. Not implemented yet.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": false,
+      "dependencies": [],
+      "parameters": [
+        {"name": "input_path", "label": "Input NIfTI path", "type": "file", "required": true, "position": 1, "description": "Input volume."},
+        {"name": "subject_name", "label": "Subject name", "type": "string", "required": true, "position": 2, "description": "Subject identifier."},
+        {"name": "method", "label": "Method", "type": "string", "required": true, "position": 3, "description": "Distortion correction method."}
+      ]
+    },
+    {
+      "name": "rsfmri_registration_T22EPI_by_hand",
+      "file": "rsfmri_registration_T22EPI_by_hand.m",
+      "callable": "rsfmri_registration_T22EPI_by_hand",
+      "display_name": "Manual T2-to-EPI registration",
+      "description": "Registered but placeholder: the file still contains the template untitled() body. Needs implementation.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": false,
+      "dependencies": [],
+      "parameters": []
+    },
+    {
+      "name": "rsfmri_registration_template2EPI_by_hand",
+      "file": "rsfmri_registration_template2EPI_by_hand.m",
+      "callable": "rsfmri_registration_template2EPI_by_hand",
+      "display_name": "Manual template-to-EPI registration",
+      "description": "Registered but placeholder: the file still contains the template untitled() body. Needs implementation.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": false,
+      "dependencies": [],
+      "parameters": []
+    },
+    {
+      "name": "rsfmri_registration_template2T2_by_hand",
+      "file": "rsfmri_registration_template2T2_by_hand.m",
+      "callable": "rsfmri_registration_template2T2_by_hand",
+      "display_name": "Manual template-to-T2 registration",
+      "description": "Registered but placeholder: returns its inputs unchanged. Needs real implementation.",
+      "status": "unavailable",
+      "execution_mode": "blocked",
+      "writes_files": false,
+      "dependencies": [],
+      "parameters": [
+        {"name": "inputArg1", "label": "Input 1", "type": "string", "required": true, "position": 1, "description": "Passed through unchanged."},
+        {"name": "inputArg2", "label": "Input 2", "type": "string", "required": true, "position": 2, "description": "Passed through unchanged."}
+      ]
+    }
+  ]
+}

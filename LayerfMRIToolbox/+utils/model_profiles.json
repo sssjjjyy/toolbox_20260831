@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "generator": "LayerfMRIToolbox AI model profiles",
+  "note": "Editable profile list shown in the first-level UI. Keys are NEVER stored here; each profile points to its own environment variable. Endpoint must accept OpenAI Chat Completions JSON and return {choices:[...]}. Model must be the exact string the gateway expects.",
+  "profiles": [
+    {
+      "id": "deepseek",
+      "display": "DeepSeek (deepseek-v4-flash)",
+      "kind": "openai_compatible",
+      "endpoint": "https://api.deepseek.com/chat/completions",
+      "model": "deepseek-v4-flash",
+      "deployment": "",
+      "key_env": "OPENAI_DEEPSEEK_API_KEY",
+      "timeout_seconds": 120
+    },
+    {
+      "id": "gpt",
+      "display": "GPT (GPT-5.6-SOL)",
+      "kind": "openai_compatible",
+      "endpoint": "https://genaiapi.shanghaitech.edu.cn/api/v1/start",
+      "model": "GPT-5.6-SOL",
+      "deployment": "east-US-2-gpt-5.6-sol",
+      "key_env": "OPENAI_GPT_API_KEY",
+      "timeout_seconds": 120
+    }
+  ]
+}

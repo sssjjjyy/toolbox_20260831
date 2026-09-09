@@ -6,3 +6,5 @@ __pycache__/
 *.asv
 logs/
 generated_code/
+spm_25.01.02/
+test/
